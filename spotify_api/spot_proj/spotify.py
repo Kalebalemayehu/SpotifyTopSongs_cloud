@@ -10,6 +10,7 @@ class Spotify:
         self.cid = client_id
         self.secret = client_secret
         self.__get_oauth()
+        self.__get_oauth()
 
     def load_code(self, code):
         self.code = code
@@ -112,10 +113,12 @@ class Spotify:
             auth_headers = {
             "client_id": self.cid,
             "response_type": "code",
-            "redirect_uri": "http://localhost:8888/callback",
+            "redirect_uri": "http://localhost:5000",
             "scope": "user-top-read"
             }
+            
             webbrowser.open("https://accounts.spotify.com/authorize?" + urlencode(auth_headers))
+
 
     def __get_token(self):
         encoded_credentials = base64.b64encode(self.cid.encode() + b':' + self.secret.encode()).decode("utf-8")
@@ -128,7 +131,7 @@ class Spotify:
         token_data = {
             "grant_type": "authorization_code",
             "code": self.code,
-            "redirect_uri": "http://localhost:8888/callback"
+            "redirect_uri": "http://localhost:5000"
         }
 
         r = requests.post("https://accounts.spotify.com/api/token", data=token_data, headers=token_headers)

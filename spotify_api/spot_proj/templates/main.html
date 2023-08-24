@@ -5,7 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spotify Top Songs</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
+  <style>
+    /* CSS for logo positioning */
+    .powered-by-aws-logo {
+      position: fixed;
+      right: 30px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 200px; /* Adjust the width as needed */
+      z-index: 1000; /* Ensure the logo is above other content */
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -19,23 +29,24 @@
     <!-- User Profile Picture -->
     <img id="profile-picture" src="{{ profile_picture }}" alt="Profile Picture">
     <!-- User Display Name -->
-    <h2 id="display-name">{{ display_name }}</h2>
-    <!-- Profile Link -->
-    <p>Welcome {{ display_name }}</p>
+    <h2 id="display-name">Welcome {{ display_name }}!</h2>
   </section>
 
-<!-- Top Songs Section -->
-<section id="top-songs-section">
-  <h2>Top Songs</h2>
-  <!-- Dropdown to Choose Time Range -->
-  <select id="time-range-select">
-    <option value="long_term">Long Term</option>
-    <option value="medium_term">Medium Term</option>
-    <option value="short_term">Short Term</option>
-  </select>
-  <!-- Top Songs List -->
-  <ul id="top-songs-list"></ul>
-</section>
+  <!-- Powered by AWS Logo -->
+  <img class="powered-by-aws-logo" src="{{ url_for('static', filename='powered-by-aws-logo.webp') }}" alt="Powered by AWS Logo">
+
+  <!-- Top Songs Section -->
+  <section id="top-songs-section">
+    <h2>📀🎧🎺🎹🎻top songs 🎷🥁🪘💚🎶</h2>
+    <!-- Dropdown to Choose Time Range -->
+    <select id="time-range-select">
+      <option value="long_term">Long Term</option>
+      <option value="medium_term">Medium Term</option>
+      <option value="short_term">Short Term</option>
+    </select>
+    <!-- Top Songs List -->
+    <ul id="top-songs-list"></ul>
+  </section>
 
   <script>
     const timeRangeSelect = document.getElementById('time-range-select');
@@ -44,7 +55,7 @@
     // Function to update top songs based on selected time range
     function updateTopSongs() {
       const selectedTimeRange = timeRangeSelect.value;
-      fetch(`/get_top_songs/${selectedTimeRange}`)
+      fetch(`/redirect/get_top_songs/${selectedTimeRange}`)
         .then(response => response.json())
         .then(data => {
           topSongsList.innerHTML = ''; // Clear the existing list
