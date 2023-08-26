@@ -5,6 +5,7 @@ import base64
 import webbrowser
 from urllib.parse import urlencode
 
+
 def get_token(client_id, client_secret, code):
     token_headers = {
         "Content-Type": "application/x-www-form-urlencoded"
@@ -13,7 +14,7 @@ def get_token(client_id, client_secret, code):
     token_data = {
         "grant_type": "authorization_code",
         "code": code,
-        "redirect_uri": "http://13.51.117.242:5000/redirect"
+        "redirect_uri": "http://13.51.117.242:5000/users"
     }
 
     response = requests.post(
@@ -75,23 +76,34 @@ authorization_code = None
 
 @app.route('/')
 def login():
-    auth_headers = {
-        "client_id": cid,
-        "response_type": "code",
-        "redirect_uri": "http://13.51.117.242:5000/redirect",
-        "scope": "user-top-read"
-    }
-    auth_url = "https://accounts.spotify.com/authorize?" + urlencode(auth_headers)
-    webbrowser.open(auth_url)
-    return "Opened browser"
-
-
-
-@app.route('/redirect')
+    if 'my_token' in session:
+        return redirect('/users')
+    else:
+        auth_headers = {
+            "client_id": cid,
+            "response_type": "code",
+            "redirect_uri": "http://13.51.117.242/users",
+            "scope": "user-top-read"
+        }
+        auth_url = "https://accounts.spotify.com/authorize?" + urlencode(auth_headers)
+        return redirect(auth_url)
+    
+@app.route('/users')
 def redirect_page():
     authorization_code = request.args.get('code')
-    session['authorization_code'] = authorization_code 
+    #session['authorization_code'] = authorization_code 
     my_token = get_token(cid, secret, authorization_code)
+    if my_token is None:
+        auth_headers = {
+            "client_id": cid,
+            "response_type": "code",
+            "redirect_uri": "http://13.51.117.242:5000/users",
+            "scope": "user-top-read"
+        }
+        auth_url = "https://accounts.spotify.com/authorize?" + urlencode(auth_headers)
+        return redirect(auth_url)
+        authorization_code = request.args.get('code')
+    
     session['my_token'] = my_token
     my_profile_result = my_profile(my_token)
     image = my_profile_result['ProfilePicture']
@@ -99,7 +111,7 @@ def redirect_page():
 
     return render_template('main.html', profile_picture=image, display_name=name)
 
-@app.route('/redirect/get_top_songs/<time_range>')
+@app.route('/users/get_top_songs/<time_range>')
 def get_top_songs(time_range):
     my_token2 = session.get('my_token')
     user_music = {}  
@@ -116,6 +128,6 @@ def get_top_songs(time_range):
 
 
 
-
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
+

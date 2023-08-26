@@ -1,18 +1,36 @@
-from flask import Flask, request, redirect
+import boto3
 
-app = Flask(__name__)
+# Create a DynamoDB client
+dynamodb = boto3.client('dynamodb')
 
-authorization_code = None
+# Define table parameters
+table_name = 'spotify_user_table'
+key_schema = [
+    {
+        'AttributeName': 'UserID',
+        'KeyType': 'HASH'  # Hash key
+    }
+]
+attribute_definitions = [
+    {
+        'AttributeName': 'UserID',
+        'AttributeType': 'S'  # String type
+    }
+]
+provisioned_throughput = {
+    'ReadCapacityUnits': 5,
+    'WriteCapacityUnits': 5
+}
 
-@app.route('/')
-def index():
-    return redirect("/callback")
+# Create the table
+response = dynamodb.create_table(
+    TableName=table_name,
+    KeySchema=key_schema,
+    AttributeDefinitions=attribute_definitions,
+    ProvisionedThroughput=provisioned_throughput
+)
 
-@app.route('/callback')
-def callback():
-    global authorization_code
-    authorization_code = request.args.get('code')
-    return "Authentication successful! You can close this window."
+# Wait for the table to be created
+dynamodb.get_waiter('table_exists').wait(TableName=table_name)
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+print("Table created:", response)

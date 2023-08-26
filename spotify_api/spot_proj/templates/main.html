@@ -55,7 +55,7 @@
     // Function to update top songs based on selected time range
     function updateTopSongs() {
       const selectedTimeRange = timeRangeSelect.value;
-      fetch(`/redirect/get_top_songs/${selectedTimeRange}`)
+      fetch(`/users/get_top_songs/${selectedTimeRange}`)
         .then(response => response.json())
         .then(data => {
           topSongsList.innerHTML = ''; // Clear the existing list
