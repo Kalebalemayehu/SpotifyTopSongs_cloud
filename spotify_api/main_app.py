@@ -5,23 +5,9 @@ import base64
 import webbrowser
 from urllib.parse import urlencode
 import boto3 
+import random
 
-
-
-# Create a session with specified region
-session = boto3.Session(region_name='eu-central-1')
-
-# Get credentials from the session
-credentials = session.get_credentials()
-
-
-session = boto3.Session(
-    aws_access_key_id= credentials.access_key,
-    aws_secret_access_key=credentials.secret_key,
-    region_name= session.region_name  # Change to your desired region
-)
-
-dynamodb = session.client('dynamodb')
+dynamodb = boto3.client('dynamodb')
 
 def get_token(client_id, client_secret, code):
     token_headers = {
@@ -99,7 +85,7 @@ def login():
         auth_headers = {
             "client_id": cid,
             "response_type": "code",
-            "redirect_uri": "http://18.193.81.149/users",
+            "redirect_uri": "http://18.193.81.149:5000/users",
             "scope": "user-top-read"
         }
         auth_url = "https://accounts.spotify.com/authorize?" + urlencode(auth_headers)
@@ -113,7 +99,7 @@ def redirect_page():
         auth_headers = {
             "client_id": cid,
             "response_type": "code",
-            "redirect_uri": "http://18.193.81.149/users",
+            "redirect_uri": "http://18.193.81.149:5000/users",
             "scope": "user-top-read"
         }
         auth_url = "https://accounts.spotify.com/authorize?" + urlencode(auth_headers)
@@ -144,6 +130,7 @@ def redirect_page():
 
     return render_template('main.html', profile_picture=image, display_name=name)
 
+
 @app.route('/users/get_top_songs/<time_range>')
 def get_top_songs(time_range):
     my_token2 = session.get('my_token')
@@ -161,6 +148,6 @@ def get_top_songs(time_range):
 
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
 
+if __name__ == '__main__':
+    app.run(debug=True)
