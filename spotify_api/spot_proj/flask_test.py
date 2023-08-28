@@ -4,7 +4,10 @@ import requests
 import base64
 import webbrowser
 from urllib.parse import urlencode
+import boto3 
+import random
 
+dynamodb = boto3.client('dynamodb')
 
 def get_token(client_id, client_secret, code):
     token_headers = {
@@ -91,7 +94,6 @@ def login():
 @app.route('/users')
 def redirect_page():
     authorization_code = request.args.get('code')
-    #session['authorization_code'] = authorization_code 
     my_token = get_token(cid, secret, authorization_code)
     if my_token is None:
         auth_headers = {
@@ -102,14 +104,32 @@ def redirect_page():
         }
         auth_url = "https://accounts.spotify.com/authorize?" + urlencode(auth_headers)
         return redirect(auth_url)
-        authorization_code = request.args.get('code')
-    
+
     session['my_token'] = my_token
     my_profile_result = my_profile(my_token)
     image = my_profile_result['ProfilePicture']
     name = my_profile_result['Name']
 
+    # Get user ID from Spotify profile
+    user_id = my_profile_result['Profile'].split('/')[-1]
+
+    user_music = {}
+    periods = ["short_term", "medium_term", "long_term"]
+    for period in periods:
+        top_songs_data = my_top_songs(my_token, period)
+        user_music[period] = top_songs_data
+
+    # Store user music data in DynamoDB
+    item = {
+        'UserID': {'S': user_id},
+        'Name': {'S': name},
+        'ProfilePicture': {'S': image},
+        'MusicData': {'M': {period: {'S': json.dumps(data)} for period, data in user_music.items()}}
+    }
+    response = dynamodb.put_item(TableName='spotify_user_table', Item=item)
+
     return render_template('main.html', profile_picture=image, display_name=name)
+
 
 @app.route('/users/get_top_songs/<time_range>')
 def get_top_songs(time_range):
