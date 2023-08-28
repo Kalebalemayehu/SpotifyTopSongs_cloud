@@ -6,7 +6,22 @@ import webbrowser
 from urllib.parse import urlencode
 import boto3 
 
-dynamodb = boto3.client('dynamodb')
+
+
+# Create a session with specified region
+session = boto3.Session(region_name='eu-central-1')
+
+# Get credentials from the session
+credentials = session.get_credentials()
+
+
+session = boto3.Session(
+    aws_access_key_id= credentials.access_key,
+    aws_secret_access_key=credentials.secret_key,
+    region_name= session.region_name  # Change to your desired region
+)
+
+dynamodb = session.client('dynamodb')
 
 def get_token(client_id, client_secret, code):
     token_headers = {
