@@ -76,6 +76,7 @@ cid = "a46764aa00b1466186824d3dbb6d62a7"
 secret = "2daad7947d4b464fa92bb93e52dac7ed"
 
 authorization_code = None
+my_token1 = None
 
 @app.route('/')
 def login():
@@ -105,8 +106,8 @@ def redirect_page():
         auth_url = "https://accounts.spotify.com/authorize?" + urlencode(auth_headers)
         return redirect(auth_url)
 
-    session['my_token'] = my_token
-    my_profile_result = my_profile(my_token)
+    my_token1 = my_token
+    my_profile_result = my_profile(my_token1)
     image = my_profile_result['ProfilePicture']
     name = my_profile_result['Name']
 
@@ -116,7 +117,7 @@ def redirect_page():
     user_music = {}
     periods = ["short_term", "medium_term", "long_term"]
     for period in periods:
-        top_songs_data = my_top_songs(my_token, period)
+        top_songs_data = my_top_songs(my_token1, period)
         user_music[period] = top_songs_data
 
     # Store user music data in DynamoDB
@@ -133,11 +134,11 @@ def redirect_page():
 
 @app.route('/users/get_top_songs/<time_range>')
 def get_top_songs(time_range):
-    my_token2 = session.get('my_token')
+    #my_token2 = session.get('my_token')
     user_music = {}  
     periods = ["short_term", "medium_term", "long_term"]
     for period in periods:
-        top_songs_data = my_top_songs(my_token2, period)
+        top_songs_data = my_top_songs(my_token1, period)
         user_music[period] = top_songs_data
 
     if time_range in user_music:
