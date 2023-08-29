@@ -69,13 +69,14 @@ def my_top_songs(access_token, term):
         result[song] = artist
 
     return result
+
 app = Flask(__name__)
 app.secret_key = "kalebssession"  # Set a secret key for session management
 
 cid = "a46764aa00b1466186824d3dbb6d62a7"
 secret = "2daad7947d4b464fa92bb93e52dac7ed"
 
-authorization_code = None
+
 
 @app.route('/')
 def login():
@@ -99,27 +100,27 @@ def redirect_page():
         auth_headers = {
             "client_id": cid,
             "response_type": "code",
-            "redirect_uri": "http://18.193.81.149:5000/users",
+            "redirect_uri": "http://18.193.81.149/users",
             "scope": "user-top-read"
         }
         auth_url = "https://accounts.spotify.com/authorize?" + urlencode(auth_headers)
         return redirect(auth_url)
-
-    session['my_token'] = my_token
+    
     my_profile_result = my_profile(my_token)
     image = my_profile_result['ProfilePicture']
     name = my_profile_result['Name']
-
-    # Get user ID from Spotify profile
     user_id = my_profile_result['Profile'].split('/')[-1]
-
+    session[f'user_id_'] = user_id
+    session['my_token'] = my_token
     user_music = {}
     periods = ["short_term", "medium_term", "long_term"]
     for period in periods:
         top_songs_data = my_top_songs(my_token, period)
         user_music[period] = top_songs_data
-
-    # Store user music data in DynamoDB
+        print("User music data:", user_music)
+    
+    #return render_template('music_test.html', user_music=user_music)
+    #Store user music data in DynamoDB
     item = {
         'UserID': {'S': user_id},
         'Name': {'S': name},
@@ -133,11 +134,13 @@ def redirect_page():
 
 @app.route('/users/get_top_songs/<time_range>')
 def get_top_songs(time_range):
-    my_token2 = session.get('my_token')
+    my_token = session.get('my_token')
+    #my_token = get_token(cid, secret, authorization_code)
+    #my_profile_result = my_profile(my_token) 
     user_music = {}  
     periods = ["short_term", "medium_term", "long_term"]
     for period in periods:
-        top_songs_data = my_top_songs(my_token2, period)
+        top_songs_data = my_top_songs(my_token, period)
         user_music[period] = top_songs_data
 
     if time_range in user_music:
@@ -145,7 +148,6 @@ def get_top_songs(time_range):
     else:
         return jsonify({})
     
-
 
 
 
